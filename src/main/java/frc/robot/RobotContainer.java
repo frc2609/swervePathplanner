@@ -50,7 +50,8 @@ public class RobotContainer {
     public RobotContainer() {
         NamedCommands.registerCommand("command1", Commands.runOnce(() -> {System.out.println("Named command ran!");}));
         
-        new EventTrigger("eventMarker1").onTrue(Commands.runOnce(() -> {System.out.println("Event trigger ran!");}));
+        new EventTrigger("Event E.X1").onTrue(Commands.runOnce(() -> {System.out.println("Event trigger ran!");}));
+        new EventTrigger("Event E.X2").onTrue(Commands.runOnce(() -> {System.out.println("Weeeeee");}));
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
