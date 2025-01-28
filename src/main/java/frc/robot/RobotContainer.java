@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -14,6 +16,12 @@ import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.events.EventTrigger;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.net.PortForwarder;
+import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.DoubleTopic;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.units.BaseUnits;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,9 +29,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.AlignCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.VisionSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -37,6 +46,8 @@ public class RobotContainer {
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
     private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+    private final VisionSubsystem m_Vision;
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -56,7 +67,29 @@ public class RobotContainer {
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
 
+        NetworkTableInstance inst = NetworkTableInstance.getDefault();
+        inst.setServerTeam(2609);
+        inst.startDSClient();
+
+
+        var limelightNT = inst.getTable("limelight");
+        DoubleTopic txTopic = limelightNT.getDoubleTopic("tx");
+        DoubleTopic tyTopic = limelightNT.getDoubleTopic("ty");
+
+
+        DoubleSubscriber txSubscriber = txTopic.subscribe(-30.0);
+        DoubleSubscriber tySubscriber = tyTopic.subscribe(-30.0);
+
+
+        DoubleSupplier txSupplier = txSubscriber::get;
+        DoubleSupplier tySupplier = tySubscriber::get;
+
+
+        m_Vision = new VisionSubsystem(txSupplier, tySupplier);
+    
         configureBindings();
+
+        
     }
 
     private void configureBindings() {
@@ -82,6 +115,7 @@ public class RobotContainer {
         joystick.pov(180).whileTrue(drivetrain.applyRequest(() ->
             forwardStraight.withVelocityX(-0.5).withVelocityY(0))
         );
+        drivetrain.applyRequest(() -> forwardStraight.withVelocityX(LimelightHelpers.getTX(null)).withVelocityY(0));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -94,7 +128,18 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
+        // cancelling on release.
+        joystick.x().whileTrue(new AlignCommand(m_Vision, drivetrain, Distance.ofRelativeUnits(150, Centimeter), 0));
     }
+        public void robotInit()
+        {
+            for (int port = 5800; port <= 5809; port++) {
+                PortForwarder.add(port, "limelight.local", port);
+            }
+      
+        }
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
