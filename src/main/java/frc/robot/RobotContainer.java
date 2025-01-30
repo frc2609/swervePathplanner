@@ -47,7 +47,7 @@ public class RobotContainer {
     private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    private final VisionSubsystem m_Vision;
+    // private final VisionSubsystem m_Vision;
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -72,20 +72,20 @@ public class RobotContainer {
         inst.startDSClient();
 
 
-        var limelightNT = inst.getTable("limelight");
-        DoubleTopic txTopic = limelightNT.getDoubleTopic("tx");
-        DoubleTopic tyTopic = limelightNT.getDoubleTopic("ty");
+        // var limelightNT = inst.getTable("limelight");
+        // DoubleTopic txTopic = limelightNT.getDoubleTopic("tx");
+        // DoubleTopic tyTopic = limelightNT.getDoubleTopic("ty");
 
 
-        DoubleSubscriber txSubscriber = txTopic.subscribe(-30.0);
-        DoubleSubscriber tySubscriber = tyTopic.subscribe(-30.0);
+        // DoubleSubscriber txSubscriber = txTopic.subscribe(-30.0);
+        // DoubleSubscriber tySubscriber = tyTopic.subscribe(-30.0);
 
 
-        DoubleSupplier txSupplier = txSubscriber::get;
-        DoubleSupplier tySupplier = tySubscriber::get;
+        // DoubleSupplier txSupplier = txSubscriber::get;
+        // DoubleSupplier tySupplier = tySubscriber::get;
 
 
-        m_Vision = new VisionSubsystem(txSupplier, tySupplier);
+        // m_Vision = new VisionSubsystem(txSupplier, tySupplier);
     
         configureBindings();
 
@@ -115,7 +115,7 @@ public class RobotContainer {
         joystick.pov(180).whileTrue(drivetrain.applyRequest(() ->
             forwardStraight.withVelocityX(-0.5).withVelocityY(0))
         );
-        drivetrain.applyRequest(() -> forwardStraight.withVelocityX(LimelightHelpers.getTX(null)).withVelocityY(0));
+        // drivetrain.applyRequest(() -> forwardStraight.withVelocityX(LimelightHelpers.getTX(null)).withVelocityY(0));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -131,7 +131,7 @@ public class RobotContainer {
 
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        joystick.x().whileTrue(new AlignCommand(m_Vision, drivetrain, Distance.ofRelativeUnits(150, Centimeter), 0));
+        joystick.x().whileTrue(new AlignCommand(drivetrain, Distance.ofRelativeUnits(150, Centimeter), 0));
     }
         public void robotInit()
         {

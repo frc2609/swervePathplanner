@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.VisionSubsystem;
 
 import static edu.wpi.first.units.Units.*;
@@ -22,37 +23,35 @@ import frc.robot.LimelightHelpers;
 import frc.robot.Constants.VisionConstants;
 
 public class AlignCommand extends Command {
-    private final VisionSubsystem m_Vision;
     private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_Swerve;
 
     private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
    .withDeadband(4.73 * 0.1).withRotationalDeadband(2 * 0.1); // Add a 10% deadband
 
 
-    public AlignCommand(VisionSubsystem vision, SwerveDrivetrain<TalonFX, TalonFX, CANcoder> swerve, Distance holdDistance, int pipelineID) {
-        m_Vision = vision;
+    public AlignCommand(CommandSwerveDrivetrain swerve, Distance holdDistance, int pipelineID) {
         m_Swerve = swerve;
 
-        addRequirements(m_Vision);
+        addRequirements(swerve);
     }
 
-    private double limelightAimProportional() {
-        // kP (constant of proportionality)
-        // Determines the aggressiveness of the proportional control loop
-        double kP = 0.035;
+    // private double limelightAimProportional() {
+    //     // kP (constant of proportionality)
+    //     // Determines the aggressiveness of the proportional control loop
+    //     double kP = 0.035;
     
-        // Get the "tx" value from the Limelight
-        double targetingAngularVelocity = m_Vision.getTX() * kP;
+    //     // Get the "tx" value from the Limelight
+    //     double targetingAngularVelocity = m_Vision.getTX() * kP;
 
     
-        // Convert to radians per second for the drivetrain
-        targetingAngularVelocity *= 0.75;
+    //     // Convert to radians per second for the drivetrain
+    //     targetingAngularVelocity *= 0.75;
     
-        // Invert since tx is positive when the target is to the right of the crosshair
-        targetingAngularVelocity *= 1.0;
+    //     // Invert since tx is positive when the target is to the right of the crosshair
+    //     targetingAngularVelocity *= 1.0;
     
-        return targetingAngularVelocity;
-    }
+    //     return targetingAngularVelocity;
+    // }
     
     // Proportional ranging control with Limelight's "ty" value
     // Works best if the Limelight's mount height and target mount height are different.
@@ -60,7 +59,9 @@ public class AlignCommand extends Command {
         double kP = 0.1;
     
         // Get the "ty" value from the Limelight
-        double targetingForwardSpeed = m_Vision.getTY() * kP;
+        // double targetingForwardSpeed = m_Vision.getTY() * kP;
+        double targetingForwardSpeed = LimelightHelpers.getTY("limelight") * kP;
+
         //SmartDashboard.putNumber("limelightX", LimelightHelpers.getTY("limelight"));
     
         // Convert to meters per second for the drivetrain
@@ -73,11 +74,10 @@ public class AlignCommand extends Command {
     }
 
     public void execute(){
-        double rot = limelightAimProportional();
+        // double rot = limelightAimProportional();
 
         double xSpeed = limelightRangeProportional(); 
-        SmartDashboard.putNumber("limelight", xSpeed);
-
+        // SmartDashboard.putNumber("limelight", xSpeed);
 
         m_Swerve.setControl(m_driveRequest.withVelocityX(xSpeed));
     }
