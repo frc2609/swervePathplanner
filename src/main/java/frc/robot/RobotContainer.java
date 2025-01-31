@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.VisionSubsystem;
 
 public class RobotContainer {
@@ -47,13 +48,14 @@ public class RobotContainer {
     private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    // private final VisionSubsystem m_Vision;
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+    public final Limelight seaweed = new Limelight("limelight-seaweed");
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -66,26 +68,6 @@ public class RobotContainer {
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
-
-        NetworkTableInstance inst = NetworkTableInstance.getDefault();
-        inst.setServerTeam(2609);
-        inst.startDSClient();
-
-
-        // var limelightNT = inst.getTable("limelight");
-        // DoubleTopic txTopic = limelightNT.getDoubleTopic("tx");
-        // DoubleTopic tyTopic = limelightNT.getDoubleTopic("ty");
-
-
-        // DoubleSubscriber txSubscriber = txTopic.subscribe(-30.0);
-        // DoubleSubscriber tySubscriber = tyTopic.subscribe(-30.0);
-
-
-        // DoubleSupplier txSupplier = txSubscriber::get;
-        // DoubleSupplier tySupplier = tySubscriber::get;
-
-
-        // m_Vision = new VisionSubsystem(txSupplier, tySupplier);
     
         configureBindings();
 
@@ -131,7 +113,7 @@ public class RobotContainer {
 
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
         // cancelling on release.
-        joystick.x().whileTrue(new AlignCommand(drivetrain, Distance.ofRelativeUnits(150, Centimeter), 0));
+        joystick.x().whileTrue(new AlignCommand(drivetrain, seaweed));
     }
         public void robotInit()
         {
