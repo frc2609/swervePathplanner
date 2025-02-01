@@ -10,6 +10,12 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.configs.jni.ConfigJNI;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -31,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignCommand;
 import frc.robot.commands.PathToAprilTagCommand;
+import frc.robot.commands.ResetGyro;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Limelight;
@@ -57,6 +64,8 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public final Limelight seaweed = new Limelight("limelight-seaweed");
+    private final Pigeon2 pidgey = new Pigeon2(0, "CANivore"); // Pigeon is on roboRIO CAN Bus with device ID 0
+    private final ResetGyro resetGyro = new ResetGyro(drivetrain, seaweed, pidgey);
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
@@ -75,6 +84,7 @@ public class RobotContainer {
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
+        pidgey.clearStickyFault_BootDuringEnable();
 
         configureBindings();
 
@@ -92,6 +102,7 @@ public class RobotContainer {
                         .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
                                                                                     // negative X (left)
                 ));
+                
 
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // joystick.b().whileTrue(drivetrain.applyRequest(
@@ -119,15 +130,16 @@ public class RobotContainer {
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is
         // pressed,
         // cancelling on release.
-        joystick.x().whileTrue(new AlignCommand(drivetrain, seaweed));
+        joystick.x().whileTrue(new AlignCommand(drivetrain, seaweed, pidgey));
 
-        joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
+        //joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
         joystick.b().onTrue(Commands.runOnce(() -> {
             Command currentCommand = drivetrain.getCurrentCommand();
             if (currentCommand instanceof PathToAprilTagCommand) {
                 currentCommand.cancel();
             }
         }));
+        joystick.y().onTrue(new ResetGyro(drivetrain, seaweed, pidgey));
     }
 
     public void robotInit() {

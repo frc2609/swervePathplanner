@@ -26,17 +26,17 @@ import edu.wpi.first.units.measure.*;
 import frc.robot.LimelightHelpers;
 import frc.robot.Constants.VisionConstants;
 
-public class AlignCommand extends Command {
+public class ResetGyro extends Command {
     private final CommandSwerveDrivetrain m_Swerve;
     private final Limelight m_limelight;
     private final Pigeon2 m_Pigeon2;
-    private Pose2d taPose2d;
+    
 
     private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
    .withDeadband(4.73 * 0.1).withRotationalDeadband(2 * 0.1); // Add a 10% deadband
 
 
-    public AlignCommand(CommandSwerveDrivetrain swerve, Limelight limelight, Pigeon2 pidgey) {
+    public ResetGyro(CommandSwerveDrivetrain swerve, Limelight limelight, Pigeon2 pidgey) {
         m_Swerve = swerve;
         m_limelight = limelight;
         m_Pigeon2 = pidgey;
@@ -47,7 +47,7 @@ public class AlignCommand extends Command {
     private double limelightAimProportional() {
         // kP (constant of proportionality)
         // Determines the aggressiveness of the proportional control loop
-        double kP = 0.04;
+        double kP = 0.06;
     
         // Get the "tx" value from the Limelight
         double targetingAngularVelocity = m_limelight.get_tx() * kP;
@@ -56,7 +56,7 @@ public class AlignCommand extends Command {
 
     
         // Convert to radians per second for the drivetrain
-        targetingAngularVelocity *= -TunerConstants.kSpeedAt12Volts.magnitude();
+        targetingAngularVelocity *= 0.75;
     
         // Invert since tx is positive when the target is to the right of the crosshair
         // targetingAngularVelocity *= 1.0;
@@ -104,26 +104,25 @@ public class AlignCommand extends Command {
     private double LimelightRoation(){
         double kP = 0.06;
         double angle = m_Pigeon2.getAccumGyroY().getValueAsDouble();
-        SmartDashboard.putNumber("Angle",angle);
+
         return angle;
 
     }
 
-    public void execute(){
-        // double rot = limelightAimProportional();
 
-        double xSpeed = limelightRangeProportional(); 
-        double yspeed = limelightAimProportional();
+
+
+    public void execute(){
 
         double tagYaw = LimelightHelpers.getBotPose_wpiBlue("limelight-seaweed")[5];
 
         m_Swerve.setControl(
             m_driveRequest
-                .withVelocityX(xSpeed)
-                .withVelocityY(yspeed)
-                
+                //.withVelocityX(xSpeed * 0.06)
+                //.withVelocityY(yspeed)
+                .withRotationalRate(-tagYaw * 0.06)
         );
-
+        SmartDashboard.putNumber("Angle",m_Pigeon2.getAccumGyroY().getValueAsDouble());
         //m_Swerve.applyRequest(()->m_driveRequest.withVelocityX(xSpeed));
     }
 }
