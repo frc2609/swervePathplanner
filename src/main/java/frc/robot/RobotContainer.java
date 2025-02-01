@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignCommand;
+import frc.robot.commands.PathToAprilTagCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Limelight;
@@ -37,7 +38,8 @@ import frc.robot.subsystems.VisionSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
+                                                                                      // max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -47,7 +49,6 @@ public class RobotContainer {
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
     private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -61,43 +62,47 @@ public class RobotContainer {
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
-        NamedCommands.registerCommand("command1", Commands.runOnce(() -> {System.out.println("Named command ran!");}));
-        
-        new EventTrigger("Event E.X1").onTrue(Commands.runOnce(() -> {System.out.println("Event trigger ran!");}));
-        new EventTrigger("Event E.X2").onTrue(Commands.runOnce(() -> {System.out.println("Weeeeee");}));
+        NamedCommands.registerCommand("command1", Commands.runOnce(() -> {
+            System.out.println("Named command ran!");
+        }));
+
+        new EventTrigger("Event E.X1").onTrue(Commands.runOnce(() -> {
+            System.out.println("Event trigger ran!");
+        }));
+        new EventTrigger("Event E.X2").onTrue(Commands.runOnce(() -> {
+            System.out.println("Weeeeee");
+        }));
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
         SmartDashboard.putData("Auto Mode", autoChooser);
-    
+
         configureBindings();
 
-        
     }
 
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
+                // Drivetrain will execute this command periodically
+                drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+                                                                                                   // negative Y
+                                                                                                   // (forward)
+                        .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                                                                                    // negative X (left)
+                ));
 
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
-        ));
+        // joystick.b().whileTrue(drivetrain.applyRequest(
+        // () -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(),
+        // -joystick.getLeftX()))));
 
-        joystick.pov(0).whileTrue(drivetrain.applyRequest(() ->
-            forwardStraight.withVelocityX(0.5).withVelocityY(0))
-        );
-        joystick.pov(180).whileTrue(drivetrain.applyRequest(() ->
-            forwardStraight.withVelocityX(-0.5).withVelocityY(0))
-        );
-        // drivetrain.applyRequest(() -> forwardStraight.withVelocityX(LimelightHelpers.getTX(null)).withVelocityY(0));
+        joystick.pov(0).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
+        joystick.pov(180)
+                .whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
+        // drivetrain.applyRequest(() ->
+        // forwardStraight.withVelocityX(LimelightHelpers.getTX(null)).withVelocityY(0));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -111,17 +116,26 @@ public class RobotContainer {
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
-        // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
+        // Schedule `exampleMethodCommand` when the Xbox controller's B button is
+        // pressed,
         // cancelling on release.
         joystick.x().whileTrue(new AlignCommand(drivetrain, seaweed));
-    }
-        public void robotInit()
-        {
-            for (int port = 5800; port <= 5809; port++) {
-                PortForwarder.add(port, "limelight.local", port);
+
+        joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
+        joystick.b().onTrue(Commands.runOnce(() -> {
+            Command currentCommand = drivetrain.getCurrentCommand();
+            if (currentCommand instanceof PathToAprilTagCommand) {
+                currentCommand.cancel();
             }
-      
+        }));
+    }
+
+    public void robotInit() {
+        for (int port = 5800; port <= 5809; port++) {
+            PortForwarder.add(port, "limelight.local", port);
         }
+
+    }
 
     public Command getAutonomousCommand() {
         /* Run the path selected from the auto chooser */
