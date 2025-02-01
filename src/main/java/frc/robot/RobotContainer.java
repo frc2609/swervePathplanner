@@ -30,11 +30,16 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignCommand;
+import frc.robot.commands.DriveToAprilTagCommand;
 import frc.robot.commands.PathToAprilTagCommand;
+import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ILimelight;
 import frc.robot.subsystems.Limelight;
+import frc.robot.subsystems.SimulatedLimelight;
 import frc.robot.subsystems.VisionSubsystem;
+import edu.wpi.first.math.geometry.Pose2d;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
@@ -55,13 +60,23 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-
-    public final Limelight seaweed = new Limelight("limelight-seaweed");
+    
+    public final ILimelight limelight;
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
 
     public RobotContainer() {
+        if (Robot.isSimulation()) {
+            limelight = new SimulatedLimelight(
+                "limelight-seaweed",
+                new Pose2d(5.0, 5.0, new Rotation2d()),
+                drivetrain
+            );
+        } else {
+            limelight = new Limelight();
+        }
+
         NamedCommands.registerCommand("command1", Commands.runOnce(() -> {
             System.out.println("Named command ran!");
         }));
@@ -119,20 +134,34 @@ public class RobotContainer {
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is
         // pressed,
         // cancelling on release.
-        joystick.x().whileTrue(new AlignCommand(drivetrain, seaweed));
+        joystick.x().whileTrue(new AlignCommand(drivetrain, limelight));
 
-        joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
+        joystick.y().whileTrue(new DriveToAprilTagCommand(drivetrain, "limelight-seaweed"));
         joystick.b().onTrue(Commands.runOnce(() -> {
             Command currentCommand = drivetrain.getCurrentCommand();
             if (currentCommand instanceof PathToAprilTagCommand) {
                 currentCommand.cancel();
             }
         }));
+
+        joystick.back().onTrue(Commands.runOnce(() -> drivetrain.resetPose(
+            new Pose2d(
+                drivetrain.getState().Pose.getX(),
+                drivetrain.getState().Pose.getY(),
+                new Rotation2d()
+            )
+        )));
+
+        // Turn to specific angles
+        joystick.povUp().onTrue(new TurnToAngleCommand(drivetrain, 0));    // Forward
+        joystick.povRight().onTrue(new TurnToAngleCommand(drivetrain, 90)); // Right
+        joystick.povDown().onTrue(new TurnToAngleCommand(drivetrain, 180)); // Backward
+        joystick.povLeft().onTrue(new TurnToAngleCommand(drivetrain, -90)); // Left
     }
 
     public void robotInit() {
         for (int port = 5800; port <= 5809; port++) {
-            PortForwarder.add(port, "limelight.local", port);
+            PortForwarder.add(port, "limelight-seaweed.local", port);
         }
 
     }

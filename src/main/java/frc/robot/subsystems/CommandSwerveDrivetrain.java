@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -288,6 +289,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        // Print detailed gyro values
+        var pose = getState().Pose;
+        SmartDashboard.putNumber("Gyro Angle (degrees)", pose.getRotation().getDegrees());
+        SmartDashboard.putNumber("Gyro Angle (radians)", pose.getRotation().getRadians());
+        SmartDashboard.putNumber("Robot X Position", pose.getX());
+        SmartDashboard.putNumber("Robot Y Position", pose.getY());
     }
 
     private void startSimThread() {
@@ -316,5 +324,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 ),
                 0.0 // Goal end velocity (m/s)
         );
+    }
+
+    public void resetGyro() {
+        // For Phoenix 6 swerve, we can reset the odometry with a zeroed rotation
+        resetPose(new Pose2d(
+            getState().Pose.getX(),
+            getState().Pose.getY(),
+            new Rotation2d()
+        ));
     }
 }

@@ -22,16 +22,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.units.measure.*;
 import frc.robot.LimelightHelpers;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.subsystems.ILimelight;
 
 public class AlignCommand extends Command {
     private final CommandSwerveDrivetrain m_Swerve;
-    private final Limelight m_limelight;
+    private final ILimelight m_limelight;
 
     private final SwerveRequest.FieldCentric m_driveRequest = new SwerveRequest.FieldCentric()
    .withDeadband(4.73 * 0.1).withRotationalDeadband(2 * 0.1); // Add a 10% deadband
 
 
-    public AlignCommand(CommandSwerveDrivetrain swerve, Limelight limelight) {
+    public AlignCommand(CommandSwerveDrivetrain swerve, ILimelight limelight) {
         m_Swerve = swerve;
         m_limelight = limelight;
 
@@ -68,6 +69,23 @@ public class AlignCommand extends Command {
         //SmartDashboard.putNumber("limelightX", LimelightHelpers.getTY("limelight"));
     
         // Convert to meters per second for the drivetrain
+        // targetingForwardSpeed *= TunerConstants.kSpeedAt12Volts.magnitude();
+    
+        // Invert the direction for proper control
+        // targetingForwardSpeed *= 1.0;
+    
+        return targetingForwardSpeed;
+    }
+    private double limelightRotProportional() {
+        double kP = 0.06;
+    
+        // Get the "ty" value from the Limelight
+        // double targetingForwardSpeed = m_Vision.getTY() * kP;
+        double targetingForwardSpeed = m_limelight.get_tx() * kP;
+
+        //SmartDashboard.putNumber("limelightX", LimelightHelpers.getTY("limelight"));
+    
+        // Convert to meters per second for the drivetrain
         targetingForwardSpeed *= TunerConstants.kSpeedAt12Volts.magnitude();
     
         // Invert the direction for proper control
@@ -75,27 +93,9 @@ public class AlignCommand extends Command {
     
         return targetingForwardSpeed;
     }
-    // private double limelightRotProportional() {
-    //     double kP = 0.06;
-    
-    //     // Get the "ty" value from the Limelight
-    //     // double targetingForwardSpeed = m_Vision.getTY() * kP;
-    //     double targetingForwardSpeed = m_limelight.get_tl() * kP;
-
-    //     //SmartDashboard.putNumber("limelightX", LimelightHelpers.getTY("limelight"));
-    
-    //     // Convert to meters per second for the drivetrain
-    //     targetingForwardSpeed *= TunerConstants.kSpeedAt12Volts.magnitude();
-    
-    //     // Invert the direction for proper control
-    //     // targetingForwardSpeed *= 1.0;
-    
-    //     return targetingForwardSpeed;
-    // }
 
     public void execute(){
-        // double rot = limelightAimProportional();
-
+        double rot = limelightAimProportional();
         double xSpeed = limelightRangeProportional(); 
         double yspeed = limelightAimProportional();
 
@@ -105,7 +105,7 @@ public class AlignCommand extends Command {
             m_driveRequest
                 .withVelocityX(xSpeed)
                 .withVelocityY(yspeed)
-                // .withRotationalRate(yspeed*5)
+                // .withRotationalRate(rot*5)
         );
     }
 }
