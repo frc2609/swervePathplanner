@@ -65,10 +65,10 @@ public class AlignCommand extends Command {
         // double targetingForwardSpeed = m_Vision.getTY() * kP;
         double targetingForwardSpeed = m_limelight.get_ty() * kP;
 
-        //SmartDashboard.putNumber("limelightX", LimelightHelpers.getTY("limelight"));
+        SmartDashboard.putNumber("limelightY: ", LimelightHelpers.getTY("limelight"));
     
         // Convert to meters per second for the drivetrain
-        targetingForwardSpeed *= TunerConstants.kSpeedAt12Volts.magnitude();
+        targetingForwardSpeed *= -TunerConstants.kSpeedAt12Volts.magnitude();
     
         // Invert the direction for proper control
         // targetingForwardSpeed *= 1.0;
@@ -104,8 +104,10 @@ public class AlignCommand extends Command {
         m_Swerve.setControl(
             m_driveRequest
                 .withVelocityX(xSpeed)
-                .withVelocityY(yspeed)
+                //.withVelocityY(yspeed)
                 // .withRotationalRate(yspeed*5)
         );
+
+        //m_Swerve.applyRequest(()->m_driveRequest.withVelocityX(xSpeed));
     }
 }
