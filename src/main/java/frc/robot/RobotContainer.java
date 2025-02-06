@@ -132,10 +132,7 @@ public class RobotContainer {
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is
         // pressed,
         // cancelling on release.
-        joystick.x().onTrue(
-                new ResetGyro(drivetrain, seaweed, pidgey).withTimeout(0.75).andThen(new AlignCommand(drivetrain, seaweed, pidgey).withTimeout(3))
-
-            );
+        joystick.x().onTrue(new AlignCommand(drivetrain, seaweed, pidgey).withTimeout(3));
         //joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
         joystick.b().onTrue(Commands.runOnce(() -> {
             Command currentCommand = drivetrain.getCurrentCommand();
