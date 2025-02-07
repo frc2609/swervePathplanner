@@ -140,7 +140,9 @@ public class RobotContainer {
                 currentCommand.cancel();
             }
         }));
-        joystick.y().onTrue(new ResetGyro(drivetrain, seaweed, pidgey));
+       joystick.y().onTrue(
+        Commands.runOnce(()-> seaweed.get_Pose2d())
+       );
     }
 
     public void robotInit() {
