@@ -52,7 +52,7 @@ public class ResetGyro extends Command {
         // Get the "tx" value from the Limelight
         double targetingAngularVelocity = m_limelight.get_tx() * kP;
 
-        SmartDashboard.putNumber("limelightX: ", m_limelight.get_tx());
+        //SmartDashboard.putNumber("limelightX: ", m_limelight.get_tx());
 
     
         // Convert to radians per second for the drivetrain
@@ -122,7 +122,7 @@ public class ResetGyro extends Command {
                 //.withVelocityY(yspeed)
                 .withRotationalRate(-tagYaw * 0.06)
         );
-        SmartDashboard.putNumber("Angle",m_Pigeon2.getAccumGyroY().getValueAsDouble());
+        //SmartDashboard.putNumber("Angle",m_Pigeon2.getAccumGyroY().getValueAsDouble());
         //m_Swerve.applyRequest(()->m_driveRequest.withVelocityX(xSpeed));
     }
 }

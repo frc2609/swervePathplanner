@@ -55,8 +55,8 @@ public class Limelight extends SubsystemBase{
         // JSONArray transform = (JSONArray) fiducial.get("transform");
         //System.out.println(Constants.VisionConstants.aprilTagMap.size());
         double[] transform = Constants.VisionConstants.aprilTagMap.get((int)ID);
-        double yaw = Math.atan2((double)transform[1], (double)transform[0]);
-        Pose2d pose = new Pose2d((double)transform[3], (double)transform[7], new Rotation2d(yaw));
+        double yaw = Math.atan2(transform[1], transform[0]);
+        Pose2d pose = new Pose2d(transform[3], transform[7], new Rotation2d(yaw));
         //SmartDashboard.putString("pose", pose.toString());
         return pose;
     

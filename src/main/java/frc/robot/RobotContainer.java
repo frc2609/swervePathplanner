@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignCommand;
@@ -67,6 +68,7 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
     private final XboxController controller_HID = joystick.getHID();
     private final JoystickButton buttonX = new JoystickButton(controller_HID, XboxController.Button.kX.value);
+    
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -77,6 +79,8 @@ public class RobotContainer {
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
 
+    public final PathToAprilTagCommand m_pathToAprilTag = new PathToAprilTagCommand(drivetrain, seaweed);
+    private final Trigger xButton = joystick.x();
     public RobotContainer() {
         NamedCommands.registerCommand("command1", Commands.runOnce(() -> {
             //System.out.println("Named command ran!");
@@ -102,35 +106,36 @@ public class RobotContainer {
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
                 // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(() -> drive.withVelocityX(-controller_HID.getLeftY() * MaxSpeed) // Drive forward with
+                /*drivetrain.applyRequest(() -> drive.withVelocityX(-controller_HID.getLeftY() * MaxSpeed) // Drive forward with
                                                                                                    // negative Y
                                                                                                    // (forward)
                         .withVelocityY(-controller_HID.getLeftX() * MaxSpeed) // Drive left with negative X (left)
                         .withRotationalRate(-controller_HID.getRightX() * MaxAngularRate) // Drive counterclockwise with
-                                                                                    // negative X (left)
-                ));
+                                                                                    // negative X (left)*/
+                m_pathToAprilTag                                                               
+                );
                 
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        /*joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         // joystick.b().whileTrue(drivetrain.applyRequest(
         // () -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(),
         // -joystick.getLeftX()))));
 
         joystick.pov(0).whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(0.5).withVelocityY(0)));
         joystick.pov(180)
-                .whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));
+                .whileTrue(drivetrain.applyRequest(() -> forwardStraight.withVelocityX(-0.5).withVelocityY(0)));*/
         // drivetrain.applyRequest(() ->
         // forwardStraight.withVelocityX(LimelightHelpers.getTX(null)).withVelocityY(0));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        /*joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));*/
 
         // reset the field-centric heading on left bumper press
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        //.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
@@ -140,10 +145,13 @@ public class RobotContainer {
         //if(controller_HID.getXButton()){
         //    new PathToAprilTagCommand(drivetrain, seaweed);
         //}
-        buttonX.onTrue(new PathToAprilTagCommand(drivetrain, seaweed));
+        
+        //buttonX.onTrue(m_pathToAprilTag);
+        //xButton.onTrue(m_pathToAprilTag);
+        joystick.x().onTrue(m_pathToAprilTag);
         //joystick.x().whileTrue(new PathToAprilTagCommand(drivetrain, seaweed));
         //joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
-        joystick.b().onTrue(Commands.runOnce(() -> {
+        /*joystick.b().onTrue(Commands.runOnce(() -> {
             Command currentCommand = drivetrain.getCurrentCommand();
             if (currentCommand instanceof PathToAprilTagCommand) {
                 currentCommand.cancel();
@@ -151,7 +159,7 @@ public class RobotContainer {
         }));
        joystick.y().onTrue(
         Commands.runOnce(()-> seaweed.get_Pose2d())
-       );
+       );*/
     }
 
     public void robotInit() {

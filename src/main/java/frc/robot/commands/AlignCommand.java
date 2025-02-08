@@ -54,11 +54,11 @@ public class AlignCommand extends Command {
         m_limelight = limelight;
         m_Pigeon2 = pidgey;
         String fileLocation =  String.format("%s%s", Filesystem.getDeployDirectory(), "/frc2025r2.json");
-        SmartDashboard.putString("print", fileLocation);
+        //SmartDashboard.putString("print", fileLocation);
         try (FileReader reader = new FileReader(fileLocation)) {
             JSONParser jsonParser = new JSONParser();
             map = (JSONObject) jsonParser.parse(reader);
-            SmartDashboard.putString("map", map.toJSONString());
+            //SmartDashboard.putString("map", map.toJSONString());
         } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
@@ -127,7 +127,7 @@ public class AlignCommand extends Command {
     private double LimelightRoation(){
         double kP = 0.06;
         double angle = m_Pigeon2.getAccumGyroY().getValueAsDouble();
-        SmartDashboard.putNumber("Angle",angle);
+        //SmartDashboard.putNumber("Angle",angle);
         return angle;
 
     }
