@@ -44,6 +44,7 @@ import frc.robot.commands.FullAlignCommand;
 import frc.robot.commands.PathToAprilTagCommand;
 import frc.robot.commands.ResetGyro;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Limelight;
 import frc.robot.subsystems.VisionSubsystem;
@@ -76,6 +77,7 @@ public class RobotContainer {
 
     /* Path follower */
     private final SendableChooser<Command> autoChooser;
+    private final Arm arm = new Arm();
 
     public RobotContainer() {
         NamedCommands.registerCommand("command1", Commands.runOnce(() -> {
