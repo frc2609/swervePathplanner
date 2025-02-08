@@ -4,6 +4,7 @@ import com.revrobotics.AbsoluteEncoder;
 import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
@@ -35,5 +36,18 @@ public class Arm extends SubsystemBase{
     public void periodic() {
         // This method will be called once per scheduler run
         SmartDashboard.putNumber("Arm Encoder", encoder.get());
+        SmartDashboard.putBoolean("Arm Moving", false);
+    }
+
+    public void Move() {
+        SmartDashboard.putBoolean("Arm Moving", true);
+        armMotor.set(1);
+
+    }
+
+    public void stop() {
+        SmartDashboard.putBoolean("Arm Moving", false);
+        armMotor.stopMotor();
+
     }
 }
