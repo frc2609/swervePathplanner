@@ -28,12 +28,15 @@ import edu.wpi.first.networktables.DoubleTopic;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignCommand;
@@ -62,6 +65,8 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
+    private final XboxController controller_HID = joystick.getHID();
+    private final JoystickButton buttonX = new JoystickButton(controller_HID, XboxController.Button.kX.value);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -74,18 +79,18 @@ public class RobotContainer {
 
     public RobotContainer() {
         NamedCommands.registerCommand("command1", Commands.runOnce(() -> {
-            System.out.println("Named command ran!");
+            //System.out.println("Named command ran!");
         }));
 
-        new EventTrigger("Event E.X1").onTrue(Commands.runOnce(() -> {
-            System.out.println("Event trigger ran!");
-        }));
-        new EventTrigger("Event E.X2").onTrue(Commands.runOnce(() -> {
-            System.out.println("Weeeeee");
-        }));
+        // new EventTrigger("Event E.X1").onTrue(Commands.runOnce(() -> {
+        //     System.out.println("Event trigger ran!");
+        // }));
+        // new EventTrigger("Event E.X2").onTrue(Commands.runOnce(() -> {
+        //     System.out.println("Weeeeee");
+        // }));
 
         autoChooser = AutoBuilder.buildAutoChooser("Tests");
-        SmartDashboard.putData("Auto Mode", autoChooser);
+        //SmartDashboard.putData("Auto Mode", autoChooser);
         pidgey.clearStickyFault_BootDuringEnable();
 
         configureBindings();
@@ -97,11 +102,11 @@ public class RobotContainer {
         // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
                 // Drivetrain will execute this command periodically
-                drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
+                drivetrain.applyRequest(() -> drive.withVelocityX(-controller_HID.getLeftY() * MaxSpeed) // Drive forward with
                                                                                                    // negative Y
                                                                                                    // (forward)
-                        .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                        .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with
+                        .withVelocityY(-controller_HID.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                        .withRotationalRate(-controller_HID.getRightX() * MaxAngularRate) // Drive counterclockwise with
                                                                                     // negative X (left)
                 ));
                 
@@ -132,7 +137,11 @@ public class RobotContainer {
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is
         // pressed,
         // cancelling on release.
-        joystick.x().onTrue(new AlignCommand(drivetrain, seaweed, pidgey).withTimeout(3));
+        //if(controller_HID.getXButton()){
+        //    new PathToAprilTagCommand(drivetrain, seaweed);
+        //}
+        buttonX.onTrue(new PathToAprilTagCommand(drivetrain, seaweed));
+        //joystick.x().whileTrue(new PathToAprilTagCommand(drivetrain, seaweed));
         //joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
         joystick.b().onTrue(Commands.runOnce(() -> {
             Command currentCommand = drivetrain.getCurrentCommand();
