@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignCommand;
 import frc.robot.commands.FullAlignCommand;
+import frc.robot.commands.MoveArm;
 import frc.robot.commands.PathToAprilTagCommand;
 import frc.robot.commands.ResetGyro;
 import frc.robot.generated.TunerConstants;
@@ -153,9 +154,14 @@ public class RobotContainer {
             }
         }));
        joystick.y()
-        .whileTrue(
-            new InstantCommand(() -> arm.Move())
-        );
+        .onTrue(
+            new MoveArm(arm)
+        )
+
+        .onFalse(
+            new InstantCommand(() -> arm.stop())
+        )
+        ;
     }
 
     public void robotInit() {
