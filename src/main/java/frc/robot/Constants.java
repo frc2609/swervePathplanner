@@ -10,6 +10,8 @@ import edu.wpi.first.units.measure.Distance;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
+import java.util.HashMap;
+
 import edu.wpi.first.units.measure.*; 
 
 public final class Constants {
@@ -25,6 +27,29 @@ public final class Constants {
     public static final Distance REEF_APRILTAG_HEIGHT = Distance.ofBaseUnits(6.875, Inches);
     public static final Distance PROCCESSOR_APRILTAG_HEIGHT = Distance.ofBaseUnits(45.875, Inches);
     public static final Distance CORAL_APRILTAG_HEIGHT = Distance.ofBaseUnits(53.25, Inches);
+
+    public static final HashMap<Integer, double[]> aprilTagMap;
+    static {
+      aprilTagMap = new HashMap<>();
+      aprilTagMap.put(18, new double[]{
+        -0.5877852522924729,
+        -0.8090169943749473,
+        0,
+        7.923198000000001,
+        0.8090169943749473,
+        -0.5877852522924729,
+        0,
+        -3.3706799999999997,
+        0,
+        0,
+        1,
+        1.4859,
+        0,
+        0,
+        0,
+        1
+    });
+    }
   }
 
 }
