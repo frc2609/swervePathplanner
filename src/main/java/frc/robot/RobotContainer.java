@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -130,7 +131,10 @@ public class RobotContainer {
         // Schedule `exampleMethodCommand` when the Xbox controller's B button is
         // pressed,
         // cancelling on release.
-        joystick.x().whileTrue(new AlignCommand(drivetrain, seaweed, pidgey));
+        joystick.x().onTrue(
+            new ResetGyro(drivetrain, seaweed, pidgey).withTimeout(0.75)
+            .andThen(new AlignCommand(drivetrain, seaweed, pidgey))
+        );
 
         //joystick.y().whileTrue(new PathToAprilTagCommand(drivetrain, "limelight-seaweed"));
         joystick.b().onTrue(Commands.runOnce(() -> {
